@@ -1,11 +1,12 @@
-$dossierCible = "FOLDER"
+$dossierCible = "?:\CIBLE"
 $fichierSortie = "LOG.txt"
 
 function test-SharepointError($dossierCible) {
     $TabFichier = [System.Collections.ArrayList]::new()
     $TabDossier = [System.Collections.ArrayList]::new()
     $listeCaracteresInterdits = @('<', '>', ':', '"', '|', '/', '\', '`*')
-    $listeExtensionsInterdites = @('exe', 'dll', 'bat', 'ps1')
+    $listeExtensionsInterdites = @('exe', 'dll', 'bat', 'ps1','lock')
+    $listeNomsInterdits = @('~$', 'CON', 'PRN', 'AUX', 'NUL', 'COM0', 'COM1', 'COM2', 'COM3', 'COM4', 'COM5', 'COM6', 'COM7', 'COM8', 'COM9', 'LPT0','LPT1','LPT2','LPT3','LPT4','LPT5','LPT6','LPT7', 'LPT8', 'LPT9', '_vti_', 'desktop.ini')
     $nombreElements = 0
     $problemeElementsParDossier =0
 
@@ -34,6 +35,17 @@ function test-SharepointError($dossierCible) {
         return $probleme
     }
 
+    function Test-VerifierNomsInterdits($nomFichier, $listeNomsInterdits) {
+        $probleme = $false
+        foreach ($nom in $listeNomsInterdits) {
+            if ($nomFichier -like "*$nom*") {
+                $TabFichier.Add("Avertissement: Le nom '$nom' de l'élément '$nomFichier' est interdits.")
+                $probleme = $true
+            }
+        }
+        return $probleme
+    }
+
     function Show-SharepointError {
         $RetourDossier | ForEach-Object {
             if ($_ -is [System.IO.FileInfo]) {
@@ -44,6 +56,7 @@ function test-SharepointError($dossierCible) {
 
                 $problemeCaracteres = Test-VerifierCaracteresInterdits $_.Name $listeCaracteresInterdits
                 $problemeExtension = Test-VerifierExtensionInterdite $_.Name $listeExtensionsInterdites
+                $problemeNoms = Test-VerifierNomsInterdits $_.Name $listeNomsInterdits
 
                 if ($problemeCaracteres -or $problemeExtension) {
                     $nombreElementsProblematiques ++
@@ -63,6 +76,11 @@ function test-SharepointError($dossierCible) {
                     $TabFichier.Add("Nombre total de caractères: $nombreTotalCaracteres")
                     $TabFichier.Add("-------------------------")
                 }
+                if ($problemeNoms) {
+                    $nombreElementsProblematiques ++
+                    $TabFichier.Add("Chemin: $($_.FullName)")
+                    $TabFichier.Add("-------------------------")
+                }
             }
         }
         Write-Host "Nombre total d'éléments scannés: $nombreElements"
@@ -75,7 +93,7 @@ function test-SharepointError($dossierCible) {
         $probleme = $false
 
         $nbElements = (Get-ChildItem -Path $dossier -Recurse | Measure-Object).Count
-        if ($nbElements -ge 200000) {
+        if ($nbElements -ge 2000) {
             $TabDossier.Add(" - Le dossier '$dossier'") | Out-Null
             $TabDossier.Add("   comprend '$nbElements' éléments") | Out-Null
             $probleme = $true          
@@ -117,4 +135,3 @@ function test-SharepointError($dossierCible) {
 }
 
 test-SharepointError $dossierCible 6>> $fichierSortie
-<# "a" >> C:\Users\Administrateur\Documents\Programation\ResultatsLAST3.txt #>
