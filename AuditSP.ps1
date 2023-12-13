@@ -10,7 +10,6 @@ function test-SharepointError($dossierCible) {
     $problemeElementsParDossier =0
 
     $RetourDossier = Get-ChildItem -Path $dossierCible -Recurse
-    <# $RetourDossierDIR = Get-ChildItem -Path $dossierCible -Directory #>
 
     ######
     # Recherche des fichiers avec des caractères, des noms et des extension interdits
