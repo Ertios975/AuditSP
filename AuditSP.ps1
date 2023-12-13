@@ -76,7 +76,7 @@ function test-SharepointError($dossierCible) {
         $probleme = $false
 
         $nbElements = (Get-ChildItem -Path $dossier -Recurse | Measure-Object).Count
-        if ($nbElements -ge 2000) {
+        if ($nbElements -ge 200000) {
             $TabDossier.Add(" - Le dossier '$dossier'") | Out-Null
             $TabDossier.Add("   comprend '$nbElements' éléments") | Out-Null
             $probleme = $true          
